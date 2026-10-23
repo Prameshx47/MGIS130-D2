@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Loan & Amortization Calculator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .slider-thumb::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0ea5e9;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+            transition: transform 0.1s ease;
+        }
+        .slider-thumb::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+    <!-- TOP HEADER BAR -->
+    <header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-sky-500/20">
+                    %
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        SmartLoan <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 font-semibold">Pro 3.0</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Multi-Lender & Risk-Adjusted Amortization Engine</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Theme Switcher -->
+                <button id="btnThemeToggle" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition flex items-center gap-2 text-xs font-semibold">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText" class="hidden md:inline">Dark Mode</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- LOAN CATEGORY TABS -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-2 flex flex-wrap gap-1 sm:gap-2 shadow-xl">
+            <button data-type="mortgage" class="btnTab flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-sky-600 text-white shadow-md shadow-sky-600/20">
+                <span>🏡</span> Mortgage
+            </button>
+            <button data-type="auto" class="btnTab flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700">
+                <span>🚗</span> Auto / Car
+            </button>
+            <button data-type="personal" class="btnTab flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700">
+                <span>💳</span> Personal Loan
+            </button>
+            <button data-type="student" class="btnTab flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700">
+                <span>🎓</span> Student Loan
+            </button>
+        </section>
+
+        <!-- DUAL COLUMN LAYOUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT COLUMN: CONTROLS & INPUTS (5 COLS) -->
+            <div class="lg:col-span-5 space-y-6">
+
+                <!-- CARD 1: LOAN PRINCIPAL & TERM -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <span>💵</span> Principal & Timeline
+                        </h2>
+                        <!-- Lock Limit Badge -->
+                        <span id="badgeLimitLock" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                            <span>🔒</span> Limit: $2,000,000
+                        </span>
+                    </div>
+
+                    <!-- Loan Amount -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <label for="inputAmount" class="font-semibold text-slate-300">Loan Principal Amount</label>
+                            <span id="txtAmountMaxNotice" class="text-slate-400 text-[11px]">Max: $2,000,000</span>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                            <input type="number" id="inputAmount" value="350000" step="1000" min="1000" max="2000000"
+                                class="w-full pl-8 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl font-bold text-white text-base focus:outline-none focus:border-sky-500 transition">
+                        </div>
+                        <input type="range" id="sliderAmount" value="350000" min="1000" max="2000000" step="1000"
+                            class="w-full accent-sky-500 slider-thumb bg-slate-800 h-2 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Loan Term -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <label for="inputTerm" class="font-semibold text-slate-700 dark:text-slate-300">Loan Term (Years)</label>
+                            <div class="flex items-center gap-1.5">
+                                <input type="number" id="inputTerm" value="30" min="1" max="30"
+                                    class="w-14 px-2 py-1 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg font-bold text-sky-600 dark:text-sky-400 text-xs text-right focus:outline-none focus:border-sky-500 transition">
+                                <span id="txtTermDisplay" class="font-bold text-sky-600 dark:text-sky-400 text-sm">30 Years</span>
+                            </div>
+                        </div>
+                        <input type="range" id="sliderTerm" value="30" min="1" max="30" step="1"
+                            class="w-full accent-sky-500 slider-thumb bg-slate-200 dark:bg-slate-800 h-2 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex gap-2 pt-1">
+                            <button class="btnTermQuick px-3 py-1 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition" data-years="5">5 yrs</button>
+                            <button class="btnTermQuick px-3 py-1 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition" data-years="10">10 yrs</button>
+                            <button class="btnTermQuick px-3 py-1 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition" data-years="15">15 yrs</button>
+                            <button class="btnTermQuick px-3 py-1 rounded-lg text-xs font-semibold bg-sky-600/30 text-sky-600 dark:text-sky-300 border border-sky-500/30 transition" data-years="30">30 yrs</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: CREDIT SCORE, STATE & INTEREST RATE -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <span>📊</span> Borrower Risk Profile
+                        </h2>
+                        <span id="txtCreditTier" class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                            Very Good (750)
+                        </span>
+                    </div>
+
+                    <!-- Credit Score Input & Slider -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <label for="inputCreditScore" class="font-semibold text-slate-300">FICO Credit Score (300 - 850)</label>
+                            <span id="txtCreditLimitCap" class="text-emerald-400 font-semibold text-[11px]">Max Limit: $1,250,000</span>
+                        </div>
+                        <div class="flex gap-3 items-center">
+                            <input type="number" id="inputCreditScore" value="750" min="300" max="850"
+                                class="w-24 px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl font-bold text-white text-sm focus:outline-none focus:border-sky-500 transition">
+                            <input type="range" id="sliderCreditScore" value="750" min="300" max="850" step="1"
+                                class="w-full accent-sky-500 slider-thumb bg-slate-800 h-2 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div id="boxCreditWarning" class="hidden p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-start gap-2">
+                            <span>⚠️</span>
+                            <span>Poor Credit Score (&lt;580) applies a +5.00% high-risk bank surcharge & lower loan limit.</span>
+                        </div>
+                    </div>
+
+                    <!-- US State Dropdown -->
+                    <div class="space-y-1.5">
+                        <label for="selectState" class="text-xs font-semibold text-slate-300 block">Borrower State Benchmark Rate</label>
+                        <select id="selectState" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-sky-500 transition">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Lender Source Dropdown -->
+                    <div class="space-y-1.5">
+                        <label for="selectLender" class="text-xs font-semibold text-slate-300 block">Funding Source / Lender Type</label>
+                        <select id="selectLender" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-sky-500 transition">
+                            <option value="bank">Commercial Bank (Base Benchmark)</option>
+                            <option value="credit_union">Credit Union (-0.50% Discount)</option>
+                            <option value="fintech">Online FinTech (+0.50% Premium)</option>
+                            <option value="p2p">Private P2P Lender (+2.50% | High $5M Limit)</option>
+                            <option value="hard_money">Hard Money Investor (+5.50% | High $10M Limit)</option>
+                        </select>
+                    </div>
+
+                    <!-- Interest Rate Input with LOCK TOGGLE -->
+                    <div class="space-y-2 pt-2 border-t border-slate-800">
+                        <div class="flex justify-between items-center text-xs">
+                            <label for="inputRate" class="font-semibold text-slate-300 flex items-center gap-1.5">
+                                <span>Total Annual Interest Rate (%)</span>
+                            </label>
+                            <!-- LOCK BUTTON -->
+                            <button id="btnLockRate" class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 border bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-600">
+                                <span id="iconLock">🔓</span> <span id="txtLock">Unlocked</span>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <input type="number" id="inputRate" value="6.50" step="0.05" min="0.1" max="35"
+                                class="w-full pr-10 pl-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl font-bold text-white text-base focus:outline-none focus:border-sky-500 transition">
+                            <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 flex justify-between">
+                            <span id="txtRateFormula">Base: 6.25% + Risk: +0.25%</span>
+                            <span class="text-sky-400 hover:underline cursor-pointer" onclick="resetRateToBenchmark()">Reset to Bank Auto</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: EXTRA PAYMENTS (ACCELERATOR) -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                        <span>🚀</span> Extra Monthly Payment Accelerator
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label for="inputExtraPayment" class="text-xs font-semibold text-slate-300 block">Extra / Month ($)</label>
+                            <input type="number" id="inputExtraPayment" value="0" min="0" step="50"
+                                class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl font-bold text-white text-sm focus:outline-none focus:border-sky-500 transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label for="inputStartMonth" class="text-xs font-semibold text-slate-300 block">Start Month #</label>
+                            <input type="number" id="inputStartMonth" value="1" min="1" max="360"
+                                class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl font-bold text-white text-sm focus:outline-none focus:border-sky-500 transition">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: RESULTS & VISUALIZATIONS (7 COLS) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- KEY METRICS GRID -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                    <!-- Monthly Payment -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl col-span-2 sm:col-span-1 bg-gradient-to-b from-sky-950/40 to-slate-900">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Monthly Payment</div>
+                        <div id="metricMonthlyPayment" class="text-2xl sm:text-3xl font-black text-white mt-1">$2,212</div>
+                        <div id="metricExtraNotice" class="text-[11px] text-emerald-400 font-semibold mt-1 hidden">+ $0 Extra</div>
+                    </div>
+
+                    <!-- Total Interest -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Interest</div>
+                        <div id="metricTotalInterest" class="text-xl sm:text-2xl font-bold text-amber-400 mt-1">$446,412</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Finance Charge</div>
+                    </div>
+
+                    <!-- Total Cost -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Loan Cost</div>
+                        <div id="metricTotalPaid" class="text-xl sm:text-2xl font-bold text-slate-100 mt-1">$796,412</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Principal + Interest</div>
+                    </div>
+
+                    <!-- Payoff Date -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Payoff Date</div>
+                        <div id="metricPayoffDate" class="text-lg font-bold text-emerald-400 mt-1">Oct 2056</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">360 Payments</div>
+                    </div>
+
+                    <!-- Interest Saved with Extra Payments -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl col-span-2">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center justify-between">
+                            <span>Interest Savings</span>
+                            <span id="metricMonthsSavedBadge" class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-md font-semibold">0 Months Early</span>
+                        </div>
+                        <div id="metricInterestSaved" class="text-xl font-extrabold text-emerald-400 mt-1">$0.00 Saved</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Accelerated Payoff Reduction</div>
+                    </div>
+                </div>
+
+                <!-- PAYOFF CURVE CHART CARD -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <span>📈</span> Loan Payoff & Interest Trajectory
+                        </h2>
+                        <div class="flex items-center gap-4 text-xs font-semibold">
+                            <span class="flex items-center gap-1.5 text-sky-400"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span> Principal Balance</span>
+                            <span class="flex items-center gap-1.5 text-amber-400"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Cumulative Interest</span>
+                        </div>
+                    </div>
+
+                    <!-- SVG Line Chart Container -->
+                    <div class="w-full h-56 bg-slate-950/60 rounded-xl border border-slate-800 p-2 relative">
+                        <svg id="svgChart" class="w-full h-full" viewBox="0 0 600 200" preserveAspectRatio="none">
+                            <!-- Rendered dynamically -->
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- AI UNDERWRITING CONSULTANT (GEMINI INTEGRATION) -->
+                <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-500/30 rounded-2xl p-5 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="p-2 bg-indigo-500/20 rounded-xl text-indigo-400 text-base">🤖</span>
+                            <div>
+                                <h2 class="text-sm font-bold text-white">AI Bank Underwriter & Risk Advisor</h2>
+                                <p class="text-xs text-slate-400">Instant approval odds & regulatory state risk analysis</p>
+                            </div>
+                        </div>
+                        <button id="btnAskAI" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center gap-2">
+                            <span>✨</span> Analyze Odds
+                        </button>
+                    </div>
+
+                    <!-- AI Output Box -->
+                    <div id="boxAiContent" class="hidden p-4 rounded-xl bg-slate-950/80 border border-indigo-500/20 text-xs text-slate-300 leading-relaxed space-y-2">
+                        <!-- Rendered by AI call -->
+                    </div>
+                </div>
+
+                <!-- AMORTIZATION SCHEDULE TABLE -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <span>📋</span> Amortization Schedule
+                        </h2>
+                        
+                        <div class="flex items-center gap-2">
+                            <!-- Annual / Monthly Toggle -->
+                            <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex text-xs">
+                                <button id="btnViewMonthly" class="px-3 py-1 rounded-lg font-bold bg-sky-600 text-white transition">Monthly</button>
+                                <button id="btnViewAnnual" class="px-3 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition">Annual Summary</button>
+                            </div>
+
+                            <!-- CSV Export Button -->
+                            <button id="btnExportCsv" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
+                                <span>📥</span> CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Schedule Table -->
+                    <div class="max-h-80 overflow-y-auto border border-slate-800 rounded-xl bg-slate-950/60">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 sticky top-0 border-b border-slate-800 font-bold text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="py-3 px-3"># Period</th>
+                                    <th class="py-3 px-3">Payment</th>
+                                    <th class="py-3 px-3">Principal</th>
+                                    <th class="py-3 px-3">Interest</th>
+                                    <th class="py-3 px-3">Remaining Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyAmortization" class="divide-y divide-slate-800/60 font-mono">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- TOAST NOTIFICATION POPUP -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none max-w-sm bg-slate-800 border border-slate-700 text-slate-100 p-4 rounded-xl shadow-2xl flex items-center gap-3">
+        <span id="toastIcon" class="text-xl">⚠️</span>
+        <span id="toastText" class="text-xs font-semibold">Notification message</span>
+    </div>
